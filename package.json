@@ -1,0 +1,48 @@
+{
+  "name": "editor-preview",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "packageManager": "pnpm@9.12.3",
+  "scripts": {
+    "lint": "eslint --ext .js,.vue,.ts,.mts *.config.* src scripts",
+    "fmt": "eslint --ext .js,.vue,.ts,.mts *.config.* src scripts --fix",
+    "collect": "tsx scripts/collect.ts",
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@core/asyncutil": "npm:@jsr/core__asyncutil@1.2.0",
+    "@logtape/logtape": "0.7.1",
+    "element-plus": "2.8.7",
+    "vue": "3.5.12"
+  },
+  "devDependencies": {
+    "@octokit/plugin-paginate-rest": "11.3.5",
+    "@octokit/types": "13.6.1",
+    "@types/node": "22.9.0",
+    "@types/unzip-stream": "0.3.4",
+    "@typescript-eslint/eslint-plugin": "7.15.0",
+    "@typescript-eslint/parser": "7.15.0",
+    "@typescript-eslint/types": "7.15.0",
+    "@typescript-eslint/utils": "7.15.0",
+    "@vitejs/plugin-vue": "5.1.4",
+    "@vue/eslint-config-prettier": "9.0.0",
+    "@vue/eslint-config-typescript": "13.0.0",
+    "dotenv": "16.4.5",
+    "eslint": "8.57.1",
+    "eslint-config-prettier": "9.1.0",
+    "eslint-plugin-import": "2.29.1",
+    "eslint-plugin-prettier": "5.1.3",
+    "eslint-plugin-vue": "9.26.0",
+    "octokit": "4.0.2",
+    "prettier": "3.2.5",
+    "sass-embedded": "1.80.6",
+    "tsx": "4.19.2",
+    "typescript": "5.6.2",
+    "unzip-stream": "0.3.4",
+    "vite": "5.4.10",
+    "vue-tsc": "2.1.8"
+  }
+}
