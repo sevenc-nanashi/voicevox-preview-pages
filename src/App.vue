@@ -74,11 +74,8 @@ import { ElButton, ElCard, ElLoading, ElTag } from "element-plus";
 import { useDownloadData } from "./composables/useDownloadData.ts";
 
 const downloads = useDownloadData();
-const baseUrl = import.meta.env.BASE_URL;
 
-const joinUrl = (path: string) => {
-  return `${baseUrl}/preview/${path}`.replace(/\/+/g, "/");
-};
+const joinUrl = (path: string) => `${import.meta.env.BASE_URL}preview/${path}`;
 </script>
 
 <style scoped lang="scss">
