@@ -254,59 +254,6 @@ const downloadTargets = await Promise.all(
         );
         log.info("Done.");
 
-        if (source.type === "pullRequest") {
-          log.info("Fetching comments...");
-          const comments = await octokit.paginate(
-            "GET /repos/{owner}/{repo}/issues/{issue_number}/comments",
-            {
-              owner: guestRepoOwner,
-              repo: guestRepoName,
-              issue_number: source.pullRequest.number,
-            },
-          );
-          const deployInfoMessage = [
-            commentMarker,
-            ":rocket: プレビュー用ページを作成しました :rocket:",
-            "",
-            `- [:pencil: エディタ](${pagesUrl}/vv-preview-demo-bot/${dirname}/editor)`,
-            `- [:book: Storybook](${pagesUrl}/vv-preview-demo-bot/${dirname}/storybook)`,
-            "",
-            `更新時点でのコミットハッシュ：[\`${source.pullRequest.head.sha.slice(0, 7)}\`](https://github.com/${
-              source.pullRequest.head.repo.full_name
-            }/commit/${source.pullRequest.head.sha})`,
-          ].join("\n");
-          const maybePreviousDeployInfo = comments.find(
-            (comment) =>
-              comment.user &&
-              appInfo.data &&
-              comment.user.login === `${appInfo.data.slug}[bot]` &&
-              comment.body?.startsWith(commentMarker),
-          );
-          if (!maybePreviousDeployInfo) {
-            log.info("Adding deploy info...");
-            await octokit.request(
-              "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
-              {
-                owner: guestRepoOwner,
-                repo: guestRepoName,
-                issue_number: source.pullRequest.number,
-                body: deployInfoMessage,
-              },
-            );
-          } else {
-            log.info("Updating deploy info...");
-            await octokit.request(
-              "PATCH /repos/{owner}/{repo}/issues/comments/{comment_id}",
-              {
-                owner: guestRepoOwner,
-                repo: guestRepoName,
-                comment_id: maybePreviousDeployInfo.id,
-                body: deployInfoMessage,
-              },
-            );
-          }
-        }
-
         return { source, dirname };
       } catch (e) {
         log.error`Failed to process: ${e}`;
@@ -318,6 +265,63 @@ const successfulDownloads = downloadTargets.filter(
 );
 if (successfulDownloads.length === 0) {
   throw new Error("No successful downloads");
+}
+
+for (const { dirname, source } of successfulDownloads) {
+  if (source.type === "branch") {
+    continue;
+  }
+  const log = rootLogger.getChild(`PR #${source.pullRequest.number}`);
+  log.info("Fetching comments...");
+  const comments = await octokit.paginate(
+    "GET /repos/{owner}/{repo}/issues/{issue_number}/comments",
+    {
+      owner: guestRepoOwner,
+      repo: guestRepoName,
+      issue_number: source.pullRequest.number,
+    },
+  );
+  const deployInfoMessage = [
+    commentMarker,
+    ":rocket: プレビュー用ページを作成しました :rocket:",
+    "",
+    `- [:pencil: エディタ](${pagesUrl}/vv-preview-demo-bot/${dirname}/editor)`,
+    `- [:book: Storybook](${pagesUrl}/vv-preview-demo-bot/${dirname}/storybook)`,
+    "",
+    `更新時点でのコミットハッシュ：[\`${source.pullRequest.head.sha.slice(0, 7)}\`](https://github.com/${
+      source.pullRequest.head.repo.full_name
+    }/commit/${source.pullRequest.head.sha})`,
+  ].join("\n");
+  const maybePreviousDeployInfo = comments.find(
+    (comment) =>
+      comment.user &&
+      appInfo.data &&
+      comment.user.login === `${appInfo.data.slug}[bot]` &&
+      comment.body?.startsWith(commentMarker),
+  );
+  if (!maybePreviousDeployInfo) {
+    log.info("Adding deploy info...");
+    await octokit.request(
+      "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
+      {
+        owner: guestRepoOwner,
+        repo: guestRepoName,
+        issue_number: source.pullRequest.number,
+        body: deployInfoMessage,
+      },
+    );
+  } else {
+    log.info("Updating deploy info...");
+    await octokit.request(
+      "PATCH /repos/{owner}/{repo}/issues/comments/{comment_id}",
+      {
+        owner: guestRepoOwner,
+        repo: guestRepoName,
+        comment_id: maybePreviousDeployInfo.id,
+        body: deployInfoMessage,
+      },
+    );
+  }
 }
 
 await fs.writeFile(
