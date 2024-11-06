@@ -282,22 +282,22 @@ for (const { dirname, source } of successfulDownloads) {
     },
   );
   const deployInfoMessage = [
-    commentMarker,
     ":rocket: プレビュー用ページを作成しました :rocket:",
     "",
-    `- [:pencil: エディタ](${pagesUrl}/vv-preview-demo-bot/${dirname}/editor)`,
-    `- [:book: Storybook](${pagesUrl}/vv-preview-demo-bot/${dirname}/storybook)`,
+    `- [:pencil: エディタ](${pagesUrl}/preview/${dirname}/editor)`,
+    `- [:book: Storybook](${pagesUrl}/preview/${dirname}/storybook)`,
     "",
     `更新時点でのコミットハッシュ：[\`${source.pullRequest.head.sha.slice(0, 7)}\`](https://github.com/${
       source.pullRequest.head.repo.full_name
     }/commit/${source.pullRequest.head.sha})`,
+    commentMarker,
   ].join("\n");
   const maybePreviousDeployInfo = comments.find(
     (comment) =>
       comment.user &&
       appInfo.data &&
       comment.user.login === `${appInfo.data.slug}[bot]` &&
-      comment.body?.startsWith(commentMarker),
+      comment.body?.endsWith(commentMarker),
   );
   if (!maybePreviousDeployInfo) {
     log.info("Adding deploy info...");
