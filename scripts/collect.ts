@@ -4,6 +4,7 @@ import { pipeline } from "node:stream/promises";
 import { App, Octokit } from "octokit";
 import { config } from "dotenv";
 import { paginateRest } from "@octokit/plugin-paginate-rest";
+import { throttling } from "@octokit/plugin-throttling";
 import { Semaphore } from "@core/asyncutil";
 import * as logtape from "@logtape/logtape";
 import unzip from "unzip-stream";
@@ -20,7 +21,7 @@ const guestRepo = "voicevox/voicevox";
 const commentMarker = "<!-- voiccevox preview-pages info -->";
 // ダウンロードしたファイルを展開するディレクトリ
 const destinationDir = `${import.meta.dirname}/../public/preview`;
-// ビルドチェックの名前
+// ビルドチェックのJobの名前
 const pagesBuildCheckName = "build_preview_pages";
 // ダウンロードするアーティファクトの名前
 const artifactName = "preview-pages";
@@ -72,7 +73,7 @@ const app = new App({
     clientId: getEnv("CLIENT_ID"),
     clientSecret: getEnv("CLIENT_SECRET"),
   },
-  Octokit: Octokit.plugin(paginateRest),
+  Octokit: Octokit.plugin(paginateRest, throttling),
 });
 
 const appInfo = await app.octokit.request("GET /app");
