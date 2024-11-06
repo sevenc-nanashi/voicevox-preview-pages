@@ -315,6 +315,9 @@ const downloadTargets = await Promise.all(
 const successfulDownloads = downloadTargets.filter(
   (downloadTarget) => downloadTarget !== undefined
 );
+if (successfulDownloads.length === 0) {
+  throw new Error("No successful downloads");
+}
 
 await fs.writeFile(
   `${destinationDir}/downloads.json`,
