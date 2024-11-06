@@ -21,7 +21,7 @@ const commentMarker = "<!-- voiccevox preview-pages info -->";
 // ダウンロードしたファイルを展開するディレクトリ
 const destinationDir = `${import.meta.dirname}/../public/preview`;
 // ビルドチェックの名前
-const pagesBuildCheckName = "update_preview_pages";
+const pagesBuildCheckName = "build_preview_pages";
 // ダウンロードするアーティファクトの名前
 const artifactName = "preview-pages";
 // PagesのURL
@@ -82,7 +82,7 @@ if (!appInfo.data) {
 rootLogger.info`Running as ${appInfo.data.name}.`;
 
 const { data: installations } = await app.octokit.request(
-  "GET /app/installations"
+  "GET /app/installations",
 );
 const installationId = installations[0].id;
 
@@ -93,7 +93,7 @@ const branches = await octokit.paginate("GET /repos/{owner}/{repo}/branches", {
   repo: guestRepoName,
 });
 const filteredBranches = branches.filter(
-  (branch) => branch.name.startsWith("project-") || branch.name === "main"
+  (branch) => branch.name.startsWith("project-") || branch.name === "main",
 );
 
 const semaphore = new Semaphore(5);
@@ -110,14 +110,14 @@ const downloadTargets = await Promise.all(
         ({
           type: "branch",
           branch,
-        }) as const
+        }) as const,
     ),
     pullRequests.map(
       (pullRequest) =>
         ({
           type: "pullRequest",
           pullRequest,
-        }) as const
+        }) as const,
     ),
   ]
     .flat()
@@ -125,7 +125,7 @@ const downloadTargets = await Promise.all(
       const log = rootLogger.getChild(
         source.type === "branch"
           ? `Branch ${source.branch.name}`
-          : `PR #${source.pullRequest.number}`
+          : `PR #${source.pullRequest.number}`,
       );
       try {
         log.info("Checking...");
@@ -140,10 +140,10 @@ const downloadTargets = await Promise.all(
               source.type === "branch"
                 ? source.branch.name
                 : source.pullRequest.head.sha,
-          }
+          },
         );
         const buildPageCheck = checkRuns.find(
-          (checkRun) => checkRun.name === pagesBuildCheckName
+          (checkRun) => checkRun.name === pagesBuildCheckName,
         );
         if (!buildPageCheck) {
           log.info("No build check found");
@@ -157,7 +157,7 @@ const downloadTargets = await Promise.all(
           buildPageCheck.details_url.match(/(?<=\/runs\/)[0-9]+/)?.[0];
         if (!runId) {
           log.error(
-            `Failed to extract check run ID from details URL: ${buildPageCheck.details_url}`
+            `Failed to extract check run ID from details URL: ${buildPageCheck.details_url}`,
           );
           return;
         }
@@ -173,7 +173,7 @@ const downloadTargets = await Promise.all(
                 owner: guestRepoOwner,
                 repo: guestRepoName,
                 job_id: jobId,
-              }
+              },
             );
             if (job.status === "completed") {
               success = job.conclusion === "success";
@@ -201,10 +201,10 @@ const downloadTargets = await Promise.all(
             owner: guestRepoOwner,
             repo: guestRepoName,
             run_id: Number.parseInt(runId),
-          }
+          },
         );
         const artifact = buildPage.data.artifacts.find(
-          (artifact) => artifact.name === artifactName
+          (artifact) => artifact.name === artifactName,
         );
         if (!artifact) {
           log.error("No artifact found");
@@ -225,7 +225,7 @@ const downloadTargets = await Promise.all(
             repo: guestRepoName,
             artifact_id: artifact.id,
             archive_format: "zip",
-          }
+          },
         );
 
         log.info`Downloading artifact from ${innerDownloadUrl}`;
@@ -249,7 +249,7 @@ const downloadTargets = await Promise.all(
           Readable.fromWeb(response.body),
           unzip.Extract({
             path: destination,
-          })
+          }),
         );
         log.info("Done.");
 
@@ -261,7 +261,7 @@ const downloadTargets = await Promise.all(
               owner: guestRepoOwner,
               repo: guestRepoName,
               issue_number: source.pullRequest.number,
-            }
+            },
           );
           const deployInfoMessage = [
             commentMarker,
@@ -279,7 +279,7 @@ const downloadTargets = await Promise.all(
               comment.user &&
               appInfo.data &&
               comment.user.login === `${appInfo.data.slug}[bot]` &&
-              comment.body?.startsWith(commentMarker)
+              comment.body?.startsWith(commentMarker),
           );
           if (!maybePreviousDeployInfo) {
             log.info("Adding deploy info...");
@@ -290,7 +290,7 @@ const downloadTargets = await Promise.all(
                 repo: guestRepoName,
                 issue_number: source.pullRequest.number,
                 body: deployInfoMessage,
-              }
+              },
             );
           } else {
             log.info("Updating deploy info...");
@@ -301,7 +301,7 @@ const downloadTargets = await Promise.all(
                 repo: guestRepoName,
                 comment_id: maybePreviousDeployInfo.id,
                 body: deployInfoMessage,
-              }
+              },
             );
           }
         }
@@ -310,10 +310,10 @@ const downloadTargets = await Promise.all(
       } catch (e) {
         log.error`Failed to process: ${e}`;
       }
-    })
+    }),
 );
 const successfulDownloads = downloadTargets.filter(
-  (downloadTarget) => downloadTarget !== undefined
+  (downloadTarget) => downloadTarget !== undefined,
 );
 if (successfulDownloads.length === 0) {
   throw new Error("No successful downloads");
@@ -321,6 +321,6 @@ if (successfulDownloads.length === 0) {
 
 await fs.writeFile(
   `${destinationDir}/downloads.json`,
-  JSON.stringify(successfulDownloads, null, 2)
+  JSON.stringify(successfulDownloads, null, 2),
 );
 rootLogger.info`Done: ${successfulDownloads.length} successful downloads / ${downloadTargets.length} total targets.`;
