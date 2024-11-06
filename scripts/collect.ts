@@ -21,7 +21,7 @@ const commentMarker = "<!-- voiccevox preview-pages info -->";
 // ダウンロードしたファイルを展開するディレクトリ
 const destinationDir = `${import.meta.dirname}/../public/preview`;
 // ビルドチェックの名前
-const pagesBuildCheckName = "update_preview_pages";
+const pagesBuildCheckName = "build_preview_pages";
 // ダウンロードするアーティファクトの名前
 const artifactName = "preview-pages";
 // PagesのURL
