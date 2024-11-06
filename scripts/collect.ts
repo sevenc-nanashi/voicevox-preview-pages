@@ -21,7 +21,7 @@ const commentMarker = "<!-- voiccevox preview-pages info -->";
 // ダウンロードしたファイルを展開するディレクトリ
 const destinationDir = `${import.meta.dirname}/../public/preview`;
 // ビルドチェックの名前
-const pagesBuildCheckName = "update_preview";
+const pagesBuildCheckName = "update_preview_pages";
 // ダウンロードするアーティファクトの名前
 const artifactName = "preview-pages";
 // PagesのURL
@@ -315,6 +315,9 @@ const downloadTargets = await Promise.all(
 const successfulDownloads = downloadTargets.filter(
   (downloadTarget) => downloadTarget !== undefined
 );
+if (successfulDownloads.length === 0) {
+  throw new Error("No successful downloads");
+}
 
 await fs.writeFile(
   `${destinationDir}/downloads.json`,
