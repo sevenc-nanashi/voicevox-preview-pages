@@ -75,7 +75,8 @@ import { useDownloadData } from "./composables/useDownloadData.ts";
 
 const downloads = useDownloadData();
 
-const joinUrl = (path: string) => `${import.meta.env.BASE_URL}preview/${path}`;
+const joinUrl = (path: string) =>
+  `${import.meta.env.BASE_URL}/preview/${path}`.replace(/\/+/g, "/");
 </script>
 
 <style scoped lang="scss">
