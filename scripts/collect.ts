@@ -284,8 +284,8 @@ for (const { dirname, source } of successfulDownloads) {
   const deployInfoMessage = [
     ":rocket: プレビュー用ページを作成しました :rocket:",
     "",
-    `- [:pencil: エディタ](${pagesUrl}/preview/${dirname}/editor)`,
-    `- [:book: Storybook](${pagesUrl}/preview/${dirname}/storybook)`,
+    `- <a href="${pagesUrl}/preview/${dirname}/editor" target="_blank">:pencil: エディタ</a>`,
+    `- <a href="${pagesUrl}/preview/${dirname}/storybook" target="_blank">:book: Storybook</a>`,
     "",
     `更新時点でのコミットハッシュ：[\`${source.pullRequest.head.sha.slice(0, 7)}\`](https://github.com/${
       source.pullRequest.head.repo.full_name
