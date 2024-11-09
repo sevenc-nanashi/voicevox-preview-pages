@@ -84,8 +84,8 @@ const joinUrl = (path: string) =>
 
 .header {
   align-content: center;
-  background: main.$theme;
-  color: white;
+  color: main.$theme;
+  background: #2b2b2b;
   padding: 1rem;
 
   font-size: 1.5rem;

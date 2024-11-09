@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="256px"
+	 height="255.993px" viewBox="0 0 256 255.993" enable-background="new 0 0 256 255.993" xml:space="preserve">
+<g id="レイヤー_2">
+	<rect fill="#1F1F1F" width="256.001" height="256"/>
+	<g>
+		<path fill="#86C591" d="M109.533,182.64L68.645,70.89c-0.923-2.395-0.593-4.609,0.987-6.647c1.581-2.035,3.753-3.054,6.519-3.054
+			h7.111c3.29,0,6.32,0.929,9.086,2.785c2.766,1.858,4.543,4.222,5.333,7.097l30.221,96.479c0,0.121,0.065,0.18,0.198,0.18
+			c0.129,0,0.197-0.059,0.197-0.18l30.617-96.658c0.92-2.875,2.731-5.21,5.432-7.007c2.697-1.796,5.694-2.695,8.987-2.695h6.321
+			c2.766,0,4.938,1.019,6.519,3.054c1.58,2.038,1.907,4.253,0.987,6.647l-40.889,111.75c-1.055,2.875-2.932,5.21-5.629,7.007
+			c-2.7,1.796-5.762,2.695-9.186,2.695h-7.11c-3.293,0-6.29-0.898-8.987-2.695C112.659,187.85,110.718,185.514,109.533,182.64z"/>
+	</g>
+</g>
+<g id="レイヤー_1" display="none">
+	
+		<image display="inline" overflow="visible" opacity="0.5" width="256" height="256" xlink:href="icon.png"  transform="matrix(1 0 0 1 4.882813e-004 0.6636)">
+	</image>
+</g>
+</svg>
