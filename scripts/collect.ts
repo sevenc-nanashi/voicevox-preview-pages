@@ -310,7 +310,7 @@ for (const { dirname, source } of successfulDownloads) {
         body: deployInfoMessage,
       },
     );
-  } else if (comment.body === deployInfoMessage) {
+  } else if (maybePreviousDeployInfo.body === deployInfoMessage) {
     log.info("No update in deploy info, skipped.");
   } else {
     log.info("Updating deploy info...");
