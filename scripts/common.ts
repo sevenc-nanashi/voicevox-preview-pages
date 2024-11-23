@@ -33,7 +33,7 @@ config({
 export const guestRepo = "voicevox/voicevox";
 // デプロイ情報を書き込むコメントの最初に付けるマーカー
 export const commentMarker = "<!-- voicevox preview-pages info -->";
-// 過去の分も含めたマーカー
+// 過去に使われていたマーカーも含めたマーカーの一覧
 export const commentMarkers = [
   commentMarker,
   "<!-- voiccevox preview-pages info -->",
