@@ -1,22 +1,5 @@
 import { ref } from "vue";
-import { Endpoints } from "@octokit/types";
-
-export type Branch =
-  Endpoints["GET /repos/{owner}/{repo}/branches"]["response"]["data"][0];
-export type PullRequest =
-  Endpoints["GET /repos/{owner}/{repo}/pulls"]["response"]["data"][0];
-export type DownloadData = {
-  source:
-    | {
-        type: "branch";
-        branch: Branch;
-      }
-    | {
-        type: "pullRequest";
-        pullRequest: PullRequest;
-      };
-  dirname: string;
-};
+import type { DownloadData } from "../../scripts/common.ts";
 
 const downloadDataRef = ref<DownloadData[] | null>(null);
 

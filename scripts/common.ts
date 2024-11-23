@@ -4,6 +4,24 @@ import { config } from "dotenv";
 import { App, Octokit } from "octokit";
 import { paginateRest } from "@octokit/plugin-paginate-rest";
 import { throttling } from "@octokit/plugin-throttling";
+import { Endpoints } from "@octokit/types";
+
+export type Branch =
+  Endpoints["GET /repos/{owner}/{repo}/branches"]["response"]["data"][0];
+export type PullRequest =
+  Endpoints["GET /repos/{owner}/{repo}/pulls"]["response"]["data"][0];
+export type DownloadData = {
+  source:
+    | {
+        type: "branch";
+        branch: Branch;
+      }
+    | {
+        type: "pullRequest";
+        pullRequest: PullRequest;
+      };
+  dirname: string;
+};
 
 config({
   path: `${import.meta.dirname}/../.env`,
@@ -23,6 +41,8 @@ export const pagesBuildCheckName = "build_preview_pages";
 export const artifactName = "preview-pages";
 // PagesのURL
 export const pagesUrl = "https://voicevox.github.io/preview-pages";
+
+export const [guestRepoOwner, guestRepoName] = guestRepo.split("/");
 
 await logtape.configure({
   sinks: {
