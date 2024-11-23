@@ -2,57 +2,19 @@ import fs from "node:fs/promises";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { App, Octokit } from "octokit";
-import { config } from "dotenv";
 import { paginateRest } from "@octokit/plugin-paginate-rest";
 import { throttling } from "@octokit/plugin-throttling";
 import { Semaphore } from "@core/asyncutil";
-import * as logtape from "@logtape/logtape";
 import unzip from "unzip-stream";
-
-config({
-  path: `${import.meta.dirname}/../.env`,
-});
-
-// 設定
-
-// 収集対象のリポジトリ
-const guestRepo = "voicevox/voicevox";
-// デプロイ情報を書き込むコメントの最初に付けるマーカー
-const commentMarker = "<!-- voiccevox preview-pages info -->";
-// ダウンロードしたファイルを展開するディレクトリ
-const destinationDir = `${import.meta.dirname}/../public/preview`;
-// ビルドチェックのJobの名前
-const pagesBuildCheckName = "build_preview_pages";
-// ダウンロードするアーティファクトの名前
-const artifactName = "preview-pages";
-// PagesのURL
-const pagesUrl = "https://voicevox.github.io/preview-pages";
-
-await logtape.configure({
-  sinks: {
-    console: logtape.getConsoleSink({
-      formatter: logtape.getAnsiColorFormatter({
-        level: "full",
-        categoryColor: "cyan",
-      }),
-    }),
-  },
-  loggers: [
-    {
-      category: "app",
-      level: "info",
-      sinks: ["console"],
-    },
-
-    {
-      category: ["logtape", "meta"],
-      level: "warning",
-      sinks: ["console"],
-    },
-  ],
-});
-
-const rootLogger = logtape.getLogger("app");
+import {
+  guestRepo,
+  pagesBuildCheckName,
+  artifactName,
+  destinationDir,
+  pagesUrl,
+  commentMarker,
+  rootLogger,
+} from "./common.ts";
 
 const [guestRepoOwner, guestRepoName] = guestRepo.split("/");
 
