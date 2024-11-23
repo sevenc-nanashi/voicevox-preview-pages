@@ -32,3 +32,5 @@ jobs:
       - name: Dry run
         run: |
           pnpm run run:collect-artifacts --skipDownload
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
