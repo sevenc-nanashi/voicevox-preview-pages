@@ -34,16 +34,18 @@ jobs:
         run: |
           pnpm install
 
-      - name: Build Pages
+      - name: Collect Artifacts
         run: |
-          pnpm run collect
-
-          pnpm run build --base /preview-pages
+          pnpm run run:collect-artifacts
         env:
           APP_ID: ${{ secrets.APP_ID }}
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+
+      - name: Build
+        run: |
+          pnpm run build --base /preview-pages
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -56,3 +58,12 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Update Comments
+        run: |
+          pnpm run run:update-comments
+        env:
+          APP_ID: ${{ secrets.APP_ID }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
