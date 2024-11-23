@@ -32,7 +32,13 @@ config({
 // 収集対象のリポジトリ
 export const guestRepo = "voicevox/voicevox";
 // デプロイ情報を書き込むコメントの最初に付けるマーカー
-export const commentMarker = "<!-- voiccevox preview-pages info -->";
+export const commentMarker = "<!-- voicevox preview-pages info -->";
+// 過去の分も含めたマーカー
+export const commentMarkers = [
+  commentMarker,
+  "<!-- voiccevox preview-pages info -->",
+];
+
 // ダウンロードしたファイルを展開するディレクトリ
 export const destinationDir = `${import.meta.dirname}/../public/preview`;
 // ビルドチェックのJobの名前

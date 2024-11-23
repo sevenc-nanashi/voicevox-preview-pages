@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import {
   appInfo,
   commentMarker,
+  commentMarkers,
   guestRepoName,
   guestRepoOwner,
   octokit,
@@ -52,7 +53,7 @@ for (const { dirname, source } of downloadData) {
       comment.user &&
       appInfo.data &&
       comment.user.login === `${appInfo.data.slug}[bot]` &&
-      comment.body?.endsWith(commentMarker),
+      commentMarkers.some((marker) => comment.body?.endsWith(marker)),
   );
   if (!maybePreviousDeployInfo) {
     log.info("Adding deploy info...");
