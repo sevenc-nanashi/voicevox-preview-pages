@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import {
-  appInfo,
+  getAppInfo,
   commentMarker,
   commentMarkers,
   guestRepoName,
@@ -10,6 +10,8 @@ import {
   rootLogger,
   DownloadData,
 } from "./common.ts";
+
+const appInfo = getAppInfo();
 
 const downloadData = JSON.parse(
   await fs.readFile(
@@ -85,4 +87,4 @@ for (const { dirname, source } of downloadData) {
   }
 }
 
-rootLogger.info`All done! ${allPullRequests} PRs, ${newComments} new comments, ${updatedComments} updated comments.`;
+rootLogger.info`Done: ${newComments} new comments, ${updatedComments} updated comments / ${allPullRequests} PRs`;
