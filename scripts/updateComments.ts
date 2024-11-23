@@ -17,10 +17,15 @@ const downloadData = JSON.parse(
   ),
 ) as DownloadData[];
 
+let allPullRequests = 0;
+let newComments = 0;
+let updatedComments = 0;
+
 for (const { dirname, source } of downloadData) {
   if (source.type === "branch") {
     continue;
   }
+  allPullRequests += 1;
   const log = rootLogger.getChild(`PR #${source.pullRequest.number}`);
   log.info("Fetching comments...");
   const comments = await octokit.paginate(
@@ -60,6 +65,7 @@ for (const { dirname, source } of downloadData) {
         body: deployInfoMessage,
       },
     );
+    newComments += 1;
   } else if (maybePreviousDeployInfo.body === deployInfoMessage) {
     log.info("No update in deploy info, skipped.");
   } else {
@@ -73,5 +79,9 @@ for (const { dirname, source } of downloadData) {
         body: deployInfoMessage,
       },
     );
+
+    updatedComments += 1;
   }
 }
+
+rootLogger.info`All done! ${allPullRequests} PRs, ${newComments} new comments, ${updatedComments} updated comments.`;
