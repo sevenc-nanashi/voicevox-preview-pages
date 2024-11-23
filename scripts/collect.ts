@@ -1,9 +1,6 @@
 import fs from "node:fs/promises";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
-import { App, Octokit } from "octokit";
-import { paginateRest } from "@octokit/plugin-paginate-rest";
-import { throttling } from "@octokit/plugin-throttling";
 import { Semaphore } from "@core/asyncutil";
 import unzip from "unzip-stream";
 import {
@@ -14,42 +11,11 @@ import {
   pagesUrl,
   commentMarker,
   rootLogger,
+  octokit,
+  appInfo,
 } from "./common.ts";
 
 const [guestRepoOwner, guestRepoName] = guestRepo.split("/");
-
-const getEnv = (name: string) => {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`Missing required env var: ${name}`);
-  }
-  return value;
-};
-
-const app = new App({
-  appId: Number.parseInt(getEnv("APP_ID")),
-  privateKey:
-    process.env.PRIVATE_KEY ||
-    (await fs.readFile(`${import.meta.dirname}/../private-key.pem`, "utf8")),
-  oauth: {
-    clientId: getEnv("CLIENT_ID"),
-    clientSecret: getEnv("CLIENT_SECRET"),
-  },
-  Octokit: Octokit.plugin(paginateRest, throttling),
-});
-
-const appInfo = await app.octokit.request("GET /app");
-if (!appInfo.data) {
-  throw new Error("Failed to get app info.");
-}
-rootLogger.info`Running as ${appInfo.data.name}.`;
-
-const { data: installations } = await app.octokit.request(
-  "GET /app/installations",
-);
-const installationId = installations[0].id;
-
-const octokit = await app.getInstallationOctokit(installationId);
 
 const branches = await octokit.paginate("GET /repos/{owner}/{repo}/branches", {
   owner: guestRepoOwner,

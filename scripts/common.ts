@@ -1,5 +1,9 @@
+import fs from "node:fs/promises";
 import * as logtape from "@logtape/logtape";
 import { config } from "dotenv";
+import { App, Octokit } from "octokit";
+import { paginateRest } from "@octokit/plugin-paginate-rest";
+import { throttling } from "@octokit/plugin-throttling";
 
 config({
   path: `${import.meta.dirname}/../.env`,
@@ -45,3 +49,36 @@ await logtape.configure({
 });
 
 export const rootLogger = logtape.getLogger("app");
+
+const getEnv = (name: string) => {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing required env var: ${name}`);
+  }
+  return value;
+};
+
+export const app = new App({
+  appId: Number.parseInt(getEnv("APP_ID")),
+  privateKey:
+    process.env.PRIVATE_KEY ||
+    (await fs.readFile(`${import.meta.dirname}/../private-key.pem`, "utf8")),
+  oauth: {
+    clientId: getEnv("CLIENT_ID"),
+    clientSecret: getEnv("CLIENT_SECRET"),
+  },
+  Octokit: Octokit.plugin(paginateRest, throttling),
+});
+
+export const appInfo = await app.octokit.request("GET /app");
+if (!appInfo.data) {
+  throw new Error("Failed to get app info.");
+}
+rootLogger.info`Running as ${appInfo.data.name}.`;
+
+const { data: installations } = await app.octokit.request(
+  "GET /app/installations",
+);
+const installationId = installations[0].id;
+
+export const octokit = await app.getInstallationOctokit(installationId);
