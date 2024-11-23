@@ -7,7 +7,8 @@
   "scripts": {
     "lint": "eslint --ext .js,.vue,.ts,.mts *.config.* src scripts",
     "fmt": "eslint --ext .js,.vue,.ts,.mts *.config.* src scripts --fix",
-    "collect": "tsx scripts/collect.ts",
+    "run:collect": "tsx scripts/collect.ts",
+    "run:update": "tsx scripts/update.ts",
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview"
@@ -29,7 +30,7 @@
     "@typescript-eslint/types": "7.15.0",
     "@typescript-eslint/utils": "7.15.0",
     "@vitejs/plugin-vue": "5.1.4",
-    "@vue/eslint-config-prettier": "9.0.0",
+    "@vue/EslintConfigPrettier": "9.0.0",
     "@vue/eslint-config-typescript": "13.0.0",
     "dotenv": "16.4.5",
     "eslint": "8.57.1",
