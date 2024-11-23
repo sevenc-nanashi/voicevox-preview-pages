@@ -28,3 +28,7 @@ jobs:
       - name: Lint
         run: |
           pnpm run lint
+
+      - name: Dry run
+        run: |
+          pnpm run run:collect-artifacts --skipDownload
