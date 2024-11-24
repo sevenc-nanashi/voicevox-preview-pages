@@ -9,15 +9,13 @@ import {
   pagesUrl,
   rootLogger,
   DownloadData,
+  destinationDir,
 } from "./common.ts";
 
 const appInfo = getAppInfo();
 
 const downloadData = JSON.parse(
-  await fs.readFile(
-    `${import.meta.url.replace("updateComments.ts", "")}downloads.json`,
-    "utf-8",
-  ),
+  await fs.readFile(`${destinationDir}/downloads.json`, "utf-8"),
 ) as DownloadData[];
 
 let allPullRequests = 0;
