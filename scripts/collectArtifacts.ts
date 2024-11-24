@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
+import { parseArgs } from "node:util";
 import { Semaphore } from "@core/asyncutil";
 import unzip from "unzip-stream";
 import {
@@ -13,6 +14,26 @@ import {
   guestRepoName,
   DownloadData,
 } from "./common.ts";
+
+const { values: args } = parseArgs({
+  options: {
+    skipDownload: {
+      type: "boolean",
+    },
+    help: {
+      type: "boolean",
+    },
+  },
+  args: process.argv.slice(2),
+});
+
+if (args.help) {
+  console.log`Usage: collectArtifacts.ts [--skipDownload]`;
+  process.exit(0);
+}
+if (args.skipDownload) {
+  rootLogger.info("--skipDownload is set, skipping download.");
+}
 
 const branches = await octokit.paginate("GET /repos/{owner}/{repo}/branches", {
   owner: guestRepoOwner,
@@ -154,29 +175,33 @@ const downloadTargets = await Promise.all(
           },
         );
 
-        log.info`Downloading artifact from ${innerDownloadUrl}`;
-        const response = await fetch(innerDownloadUrl);
-        if (!response.ok) {
-          log.error`Failed to download artifact: ${response.statusText}`;
-          return;
-        }
-        if (!response.body) {
-          log.error("Response has no body");
-          return;
-        }
         const dirname =
           source.type === "branch"
             ? `branch-${source.branch.name}`
             : `pr-${source.pullRequest.number}`;
-        const destination = `${destinationDir}/${dirname}`;
-        log.info`Extracting artifact to ${destination}`;
-        await fs.mkdir(destination, { recursive: true });
-        await pipeline(
-          Readable.fromWeb(response.body),
-          unzip.Extract({
-            path: destination,
-          }),
-        );
+        if (args.skipDownload) {
+          log.info`Download skipped: ${innerDownloadUrl}`;
+        } else {
+          log.info`Downloading artifact from ${innerDownloadUrl}`;
+          const response = await fetch(innerDownloadUrl);
+          if (!response.ok) {
+            log.error`Failed to download artifact: ${response.statusText}`;
+            return;
+          }
+          if (!response.body) {
+            log.error("Response has no body");
+            return;
+          }
+          const destination = `${destinationDir}/${dirname}`;
+          log.info`Extracting artifact to ${destination}`;
+          await fs.mkdir(destination, { recursive: true });
+          await pipeline(
+            Readable.fromWeb(response.body),
+            unzip.Extract({
+              path: destination,
+            }),
+          );
+        }
         log.info("Done.");
 
         return { source, dirname };

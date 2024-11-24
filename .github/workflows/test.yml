@@ -28,3 +28,9 @@ jobs:
       - name: Lint
         run: |
           pnpm run lint
+
+      - name: Test Dry Run
+        run: |
+          pnpm run run:collect-artifacts --skipDownload
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

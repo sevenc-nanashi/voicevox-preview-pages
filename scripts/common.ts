@@ -4,7 +4,7 @@ import { config } from "dotenv";
 import { App, Octokit } from "octokit";
 import { paginateRest } from "@octokit/plugin-paginate-rest";
 import { throttling } from "@octokit/plugin-throttling";
-import { Endpoints } from "@octokit/types";
+import { Endpoints, OctokitResponse } from "@octokit/types";
 
 export type Branch =
   Endpoints["GET /repos/{owner}/{repo}/branches"]["response"]["data"][0];
@@ -84,27 +84,50 @@ const getEnv = (name: string) => {
   return value;
 };
 
-export const app = new App({
-  appId: Number.parseInt(getEnv("APP_ID")),
-  privateKey:
-    process.env.PRIVATE_KEY ||
-    (await fs.readFile(`${import.meta.dirname}/../private-key.pem`, "utf8")),
-  oauth: {
-    clientId: getEnv("CLIENT_ID"),
-    clientSecret: getEnv("CLIENT_SECRET"),
-  },
-  Octokit: Octokit.plugin(paginateRest, throttling),
-});
+let appInfo:
+  | OctokitResponse<Endpoints["GET /app"]["response"]["data"]>
+  | undefined;
+export let octokit: Octokit;
 
-export const appInfo = await app.octokit.request("GET /app");
-if (!appInfo.data) {
-  throw new Error("Failed to get app info.");
+if (process.env.APP_ID) {
+  rootLogger.info`Running as GitHub App. (Read + Write)`;
+  const app = new App({
+    appId: Number.parseInt(getEnv("APP_ID")),
+    privateKey:
+      process.env.PRIVATE_KEY ||
+      (await fs.readFile(`${import.meta.dirname}/../private-key.pem`, "utf8")),
+    oauth: {
+      clientId: getEnv("CLIENT_ID"),
+      clientSecret: getEnv("CLIENT_SECRET"),
+    },
+    Octokit: Octokit.plugin(paginateRest, throttling),
+  });
+
+  appInfo = await app.octokit.request("GET /app");
+  if (!appInfo.data) {
+    throw new Error("Failed to get app info.");
+  }
+  rootLogger.info`Running as ${appInfo.data.name}.`;
+
+  const { data: installations } = await app.octokit.request(
+    "GET /app/installations",
+  );
+  const installationId = installations[0].id;
+
+  octokit = await app.getInstallationOctokit(installationId);
+} else if (process.env.GITHUB_TOKEN) {
+  rootLogger.info`Running with GitHub Token. (Read only)`;
+
+  octokit = new Octokit({
+    auth: getEnv("GITHUB_TOKEN"),
+  });
+} else {
+  throw new Error("No GitHub App or Token provided.");
 }
-rootLogger.info`Running as ${appInfo.data.name}.`;
 
-const { data: installations } = await app.octokit.request(
-  "GET /app/installations",
-);
-const installationId = installations[0].id;
-
-export const octokit = await app.getInstallationOctokit(installationId);
+export const getAppInfo = () => {
+  if (!appInfo) {
+    throw new Error("This script requires appInfo to be set.");
+  }
+  return appInfo;
+};
