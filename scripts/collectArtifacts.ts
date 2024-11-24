@@ -1,93 +1,18 @@
 import fs from "node:fs/promises";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
-import { App, Octokit } from "octokit";
-import { config } from "dotenv";
-import { paginateRest } from "@octokit/plugin-paginate-rest";
-import { throttling } from "@octokit/plugin-throttling";
 import { Semaphore } from "@core/asyncutil";
-import * as logtape from "@logtape/logtape";
 import unzip from "unzip-stream";
-
-config({
-  path: `${import.meta.dirname}/../.env`,
-});
-
-// 設定
-
-// 収集対象のリポジトリ
-const guestRepo = "voicevox/voicevox";
-// デプロイ情報を書き込むコメントの最初に付けるマーカー
-const commentMarker = "<!-- voiccevox preview-pages info -->";
-// ダウンロードしたファイルを展開するディレクトリ
-const destinationDir = `${import.meta.dirname}/../public/preview`;
-// ビルドチェックのJobの名前
-const pagesBuildCheckName = "build_preview_pages";
-// ダウンロードするアーティファクトの名前
-const artifactName = "preview-pages";
-// PagesのURL
-const pagesUrl = "https://voicevox.github.io/preview-pages";
-
-await logtape.configure({
-  sinks: {
-    console: logtape.getConsoleSink({
-      formatter: logtape.getAnsiColorFormatter({
-        level: "full",
-        categoryColor: "cyan",
-      }),
-    }),
-  },
-  loggers: [
-    {
-      category: "app",
-      level: "info",
-      sinks: ["console"],
-    },
-
-    {
-      category: ["logtape", "meta"],
-      level: "warning",
-      sinks: ["console"],
-    },
-  ],
-});
-
-const rootLogger = logtape.getLogger("app");
-
-const [guestRepoOwner, guestRepoName] = guestRepo.split("/");
-
-const getEnv = (name: string) => {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`Missing required env var: ${name}`);
-  }
-  return value;
-};
-
-const app = new App({
-  appId: Number.parseInt(getEnv("APP_ID")),
-  privateKey:
-    process.env.PRIVATE_KEY ||
-    (await fs.readFile(`${import.meta.dirname}/../private-key.pem`, "utf8")),
-  oauth: {
-    clientId: getEnv("CLIENT_ID"),
-    clientSecret: getEnv("CLIENT_SECRET"),
-  },
-  Octokit: Octokit.plugin(paginateRest, throttling),
-});
-
-const appInfo = await app.octokit.request("GET /app");
-if (!appInfo.data) {
-  throw new Error("Failed to get app info.");
-}
-rootLogger.info`Running as ${appInfo.data.name}.`;
-
-const { data: installations } = await app.octokit.request(
-  "GET /app/installations",
-);
-const installationId = installations[0].id;
-
-const octokit = await app.getInstallationOctokit(installationId);
+import {
+  pagesBuildCheckName,
+  artifactName,
+  destinationDir,
+  rootLogger,
+  octokit,
+  guestRepoOwner,
+  guestRepoName,
+  DownloadData,
+} from "./common.ts";
 
 const branches = await octokit.paginate("GET /repos/{owner}/{repo}/branches", {
   owner: guestRepoOwner,
@@ -122,7 +47,7 @@ const downloadTargets = await Promise.all(
     ),
   ]
     .flat()
-    .map(async (source) => {
+    .map(async (source): Promise<DownloadData | undefined> => {
       const log = rootLogger.getChild(
         source.type === "branch"
           ? `Branch ${source.branch.name}`
@@ -265,65 +190,6 @@ const successfulDownloads = downloadTargets.filter(
 );
 if (successfulDownloads.length === 0) {
   throw new Error("No successful downloads");
-}
-
-for (const { dirname, source } of successfulDownloads) {
-  if (source.type === "branch") {
-    continue;
-  }
-  const log = rootLogger.getChild(`PR #${source.pullRequest.number}`);
-  log.info("Fetching comments...");
-  const comments = await octokit.paginate(
-    "GET /repos/{owner}/{repo}/issues/{issue_number}/comments",
-    {
-      owner: guestRepoOwner,
-      repo: guestRepoName,
-      issue_number: source.pullRequest.number,
-    },
-  );
-  const deployInfoMessage = [
-    ":rocket: プレビュー用ページを作成しました :rocket:",
-    "",
-    `- <a href="${pagesUrl}/preview/${dirname}/editor" target="_blank">:pencil: エディタ</a>`,
-    `- <a href="${pagesUrl}/preview/${dirname}/storybook" target="_blank">:book: Storybook</a>`,
-    "",
-    `更新時点でのコミットハッシュ：[\`${source.pullRequest.head.sha.slice(0, 7)}\`](https://github.com/${
-      source.pullRequest.head.repo.full_name
-    }/commit/${source.pullRequest.head.sha})`,
-    commentMarker,
-  ].join("\n");
-  const maybePreviousDeployInfo = comments.find(
-    (comment) =>
-      comment.user &&
-      appInfo.data &&
-      comment.user.login === `${appInfo.data.slug}[bot]` &&
-      comment.body?.endsWith(commentMarker),
-  );
-  if (!maybePreviousDeployInfo) {
-    log.info("Adding deploy info...");
-    await octokit.request(
-      "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
-      {
-        owner: guestRepoOwner,
-        repo: guestRepoName,
-        issue_number: source.pullRequest.number,
-        body: deployInfoMessage,
-      },
-    );
-  } else if (maybePreviousDeployInfo.body === deployInfoMessage) {
-    log.info("No update in deploy info, skipped.");
-  } else {
-    log.info("Updating deploy info...");
-    await octokit.request(
-      "PATCH /repos/{owner}/{repo}/issues/comments/{comment_id}",
-      {
-        owner: guestRepoOwner,
-        repo: guestRepoName,
-        comment_id: maybePreviousDeployInfo.id,
-        body: deployInfoMessage,
-      },
-    );
-  }
 }
 
 await fs.writeFile(

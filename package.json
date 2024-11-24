@@ -7,7 +7,8 @@
   "scripts": {
     "lint": "eslint --ext .js,.vue,.ts,.mts *.config.* src scripts",
     "fmt": "eslint --ext .js,.vue,.ts,.mts *.config.* src scripts --fix",
-    "collect": "tsx scripts/collect.ts",
+    "run:collect-artifacts": "tsx scripts/collectArtifacts.ts",
+    "run:update-comments": "tsx scripts/updateComments.ts",
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview"
