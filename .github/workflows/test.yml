@@ -29,7 +29,7 @@ jobs:
         run: |
           pnpm run lint
 
-      - name: Dry run
+      - name: Test Dry Run
         run: |
           pnpm run run:collect-artifacts --skipDownload
         env:
